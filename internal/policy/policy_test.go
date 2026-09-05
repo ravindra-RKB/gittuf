@@ -1263,6 +1263,10 @@ func TestDiscard(t *testing.T) {
 		}
 
 		assert.Equal(t, policyTip, stagingTip)
+
+		stagingEntry, _, err := rsl.GetLatestReferenceUpdaterEntry(repo, rsl.ForReference(PolicyStagingRef))
+		assert.Nil(t, err)
+		assert.Equal(t, policyTip, stagingEntry.GetTargetID())
 	})
 
 	t.Run("discard changes when policy ref does not exist", func(t *testing.T) {
@@ -1292,6 +1296,10 @@ func TestDiscard(t *testing.T) {
 
 		_, err = repo.GetReference(PolicyStagingRef)
 		assert.ErrorIs(t, err, gitinterface.ErrReferenceNotFound)
+
+		stagingEntry, _, err := rsl.GetLatestReferenceUpdaterEntry(repo, rsl.ForReference(PolicyStagingRef))
+		assert.Nil(t, err)
+		assert.Equal(t, gitinterface.ZeroHash, stagingEntry.GetTargetID())
 	})
 }
 

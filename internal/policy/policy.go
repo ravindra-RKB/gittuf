@@ -881,6 +881,11 @@ func Discard(repo gitstore.Storer) error {
 			if err := repo.DeleteReference(PolicyStagingRef); err != nil && !errors.Is(err, gitinterface.ErrReferenceNotFound) {
 				return fmt.Errorf("failed to delete policy staging reference %s: %w", PolicyStagingRef, err)
 			}
+			
+			if err := rsl.NewReferenceEntry(PolicyStagingRef, gitinterface.ZeroHash).Commit(repo, false); err != nil {
+				return fmt.Errorf("failed to record policy staging deletion in RSL: %w", err)
+			}
+
 			return nil
 		}
 		return fmt.Errorf("failed to get policy reference %s: %w", PolicyRef, err)
@@ -889,6 +894,10 @@ func Discard(repo gitstore.Storer) error {
 	// Reset PolicyStagingRef to match the actual policy ref
 	if err := repo.SetReference(PolicyStagingRef, policyTip); err != nil {
 		return fmt.Errorf("failed to reset policy staging reference %s: %w", PolicyStagingRef, err)
+	}
+
+	if err := rsl.NewReferenceEntry(PolicyStagingRef, policyTip).Commit(repo, false); err != nil {
+		return fmt.Errorf("failed to record policy discard in RSL: %w", err)
 	}
 
 	return nil
